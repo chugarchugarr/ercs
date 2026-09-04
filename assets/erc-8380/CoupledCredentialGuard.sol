@@ -31,10 +31,9 @@ contract CoupledCredentialGuard is IUnclonableCredential {
 
     mapping(bytes32 => bool) public consumed;
     mapping(bytes32 => bool) public issued;
-    /// @dev (agentId, homeDomainId) => highest issued index, so a collision can be classified: an
-    ///      index the orchestrator never issued in that domain is a clone, one it did issue is its
-    ///      own reissue bug. Keyed by the pair so a collision in one domain cannot be misclassified
-    ///      against another domain's ceiling for the same agent.
+    mapping(bytes32 => bytes32) public override consumedCommitment;
+    /// @dev (agentId, homeDomainId) => highest issued index. Bookkeeping only; collision
+    ///      classification comes from proof-authenticated commitment state.
     mapping(uint256 => mapping(uint256 => uint256)) public override highestIssuedIndex;
 
     constructor(address _verifier, address _domainRegistry) {
@@ -92,7 +91,25 @@ contract CoupledCredentialGuard is IUnclonableCredential {
         if (!domainRegistry.isActiveDomain(cap.homeDomainId)) revert DomainInvalid();
         if (block.timestamp > cap.expiry) revert Expired();
         if (msg.sender != cap.executor) revert ExecutorMismatch();
-        if (consumed[cap.nullifier]) revert CredentialAlreadySpent(cap.nullifier);
+        if (consumed[cap.nullifier]) {
+            // A nullifier is public after its first spend. Authenticate this opening before
+            // using caller-supplied capability metadata as collision evidence.
+            bytes32[] memory collisionInputs = _buildPublicInputs(cap);
+            if (!verifier.verify(proof, collisionInputs)) revert BadProof();
+
+            bytes32 firstCommitment = consumedCommitment[cap.nullifier];
+            if (!issued[cap.capabilityCommitment]) {
+                revert UnissuedNullifierCollision(cap.nullifier, cap.capabilityCommitment);
+            }
+            if (cap.capabilityCommitment != firstCommitment) {
+                revert IssuedSaltReuse(
+                    cap.nullifier,
+                    firstCommitment,
+                    cap.capabilityCommitment
+                );
+            }
+            revert CredentialAlreadySpent(cap.nullifier);
+        }
 
         // Mandatory issuance. The commitment binds the action, so an unissued action never consumes.
         if (!issued[cap.capabilityCommitment]) revert CommitmentNotIssued(cap.capabilityCommitment);
@@ -106,6 +123,7 @@ contract CoupledCredentialGuard is IUnclonableCredential {
 
         // Burn and act atomically: a consumed nullifier always means the action ran.
         consumed[cap.nullifier] = true;
+        consumedCommitment[cap.nullifier] = cap.capabilityCommitment;
         emit NullifierBurned(cap.nullifier, cap.agentId, cap.capabilityIndex, cap.actionCommitment);
 
         (bool ok,) = target.call(callData);

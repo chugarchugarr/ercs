@@ -25,10 +25,20 @@ interface IUnclonableCredential {
         bytes32 actionCommitment
     );
 
-    /// @notice A second spend of a nullifier. This is the on-chain alarm for a contested count.
-    /// @dev Classify against `highestIssuedIndex`. A collision at an index the orchestrator never
-    ///      issued indicates a clone. One at an index it did issue indicates a reissue bug.
+    /// @notice A second valid spend of the exact capability that first consumed the nullifier.
+    /// @dev This proves replay of the issued capability, but does not distinguish a clone from a retry.
     error CredentialAlreadySpent(bytes32 nullifier);
+
+    /// @notice A valid proof opens an already-consumed nullifier under a commitment that was never issued.
+    error UnissuedNullifierCollision(bytes32 nullifier, bytes32 capabilityCommitment);
+
+    /// @notice Two distinct issued commitments open the same nullifier.
+    /// @dev This means the issuer reused the same salt across separate issuances.
+    error IssuedSaltReuse(
+        bytes32 nullifier,
+        bytes32 firstCapabilityCommitment,
+        bytes32 secondCapabilityCommitment
+    );
 
     /// @notice The commitment was never issued, so no action bound to it may ever burn.
     error CommitmentNotIssued(bytes32 capabilityCommitment);
@@ -71,6 +81,10 @@ interface IUnclonableCredential {
     /// @notice Query whether a nullifier has been burned.
     function isConsumed(bytes32 nullifier) external view returns (bool);
 
+    /// @notice Commitment whose successful execution first consumed `nullifier`.
+    function consumedCommitment(bytes32 nullifier) external view returns (bytes32);
+
     /// @notice Highest capability index the orchestrator has issued for an agent in a domain.
+    /// @dev Informational high-water mark only; it MUST NOT be used to classify collisions.
     function highestIssuedIndex(uint256 agentId, uint256 homeDomainId) external view returns (uint256);
 }
