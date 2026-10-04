@@ -1,0 +1,166 @@
+{
+  "version": "0.1.0",
+  "fixtures": [
+    {
+      "id": "8403-uncommitted-history-prefix",
+      "rule": "outcome_relevant_closure",
+      "expect": "VIOLATION",
+      "case": {
+        "committed": {
+          "history_root": "H",
+          "policy": "consume-current-counter"
+        },
+        "variant_a": {
+          "uncommitted_selector": "through-grant",
+          "authorized_successor": "key_B"
+        },
+        "variant_b": {
+          "uncommitted_selector": "through-revoke",
+          "authorized_successor": "NONE"
+        }
+      }
+    },
+    {
+      "id": "procedure-manifest-uncommitted-reducer",
+      "rule": "outcome_relevant_closure",
+      "expect": "VIOLATION",
+      "case": {
+        "committed": {
+          "observations": [
+            "PASS:0.91",
+            "FAIL:0.63",
+            "PASS:0.74"
+          ],
+          "procedure": "frozen"
+        },
+        "variant_a": {
+          "uncommitted_selector": "mean-confidence",
+          "authorized_successor": "RELEASE"
+        },
+        "variant_b": {
+          "uncommitted_selector": "minimum-confidence",
+          "authorized_successor": "UNRESOLVED"
+        }
+      }
+    },
+    {
+      "id": "8425-compromised-predecessor",
+      "rule": "evidence_non_authority",
+      "expect": "UNRESOLVED",
+      "case": {
+        "evidence_valid": true,
+        "authority_edge": false,
+        "claimed_result": "AUTHORIZED"
+      }
+    },
+    {
+      "id": "8288-proof-scope",
+      "rule": "scope_binding",
+      "expect": "UNAUTHORIZED",
+      "case": {
+        "proof_valid": true,
+        "proof_scope": [
+          "d1",
+          "d2"
+        ],
+        "target_scope": [
+          "d1",
+          "d2",
+          "d3"
+        ]
+      }
+    },
+    {
+      "id": "composition-non-expansion",
+      "rule": "composition_non_expansion",
+      "expect": "VIOLATION",
+      "case": {
+        "input_authority": [
+          "read:a",
+          "read:b"
+        ],
+        "policy_grants": [],
+        "output_authority": [
+          "read:a",
+          "read:b",
+          "write:c"
+        ]
+      }
+    },
+    {
+      "id": "stale-authorization-effectuation",
+      "rule": "effectuation_closure",
+      "expect": "RE_RESOLVE",
+      "case": {
+        "resolved_basis": {
+          "state_root": "S1",
+          "authority_epoch": 7,
+          "policy_version": 3,
+          "transition": "T"
+        },
+        "effectuation_basis": {
+          "state_root": "S2",
+          "authority_epoch": 8,
+          "policy_version": 3,
+          "transition": "T"
+        },
+        "atomic": false,
+        "re_resolved": false
+      }
+    },
+    {
+      "id": "residual-authority-canon",
+      "rule": "canon_future_sufficiency",
+      "expect": "VIOLATION",
+      "case": {
+        "canon_a": "same-current-permissions",
+        "canon_b": "same-current-permissions",
+        "future_event": "revoke-direct-edge-x",
+        "future_result_a": "AUTHORIZED",
+        "future_result_b": "UNAUTHORIZED"
+      }
+    },
+    {
+      "id": "translation-authority-expansion",
+      "rule": "translation_authority_preservation",
+      "expect": "VIOLATION",
+      "case": {
+        "source_authority": [
+          "motor:clockwise<=10rpm"
+        ],
+        "lower_layer_authority": [
+          "motor:clockwise<=10rpm",
+          "motor:counterclockwise<=10rpm"
+        ],
+        "explicit_expansion": []
+      }
+    },
+    {
+      "id": "quantum-feedforward-governed",
+      "rule": "unknown_outcome_governed",
+      "expect": "CLOSED",
+      "case": {
+        "possible_outcomes": [
+          "0",
+          "1"
+        ],
+        "committed_mapping": {
+          "0": "apply_X",
+          "1": "apply_Z"
+        },
+        "observed_outcome": "1",
+        "executed_action": "apply_Z"
+      }
+    },
+    {
+      "id": "provenance-truth-overclaim",
+      "rule": "evidence_non_authority",
+      "expect": "UNRESOLVED",
+      "case": {
+        "evidence_valid": true,
+        "authority_edge": false,
+        "claimed_result": "AUTHORIZED"
+      }
+    }
+  ]
+}
