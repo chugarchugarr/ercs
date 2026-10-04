@@ -53,3 +53,10 @@ Joseph Angel Lerma (@chugarchugarr) remains the listed author and has prepared/a
 ```
 
 The submitter should not add themselves as an author unless they materially co-author the proposal and the listed author agrees. Repository transport and EIP authorship are separate.
+
+
+## Licensing
+
+The standalone Resolution v0.1 specification and documentation remain copyright © 2026 Joseph Angel Lerma and are licensed under CC BY 4.0; the conformance code is MIT-licensed.
+
+Only the Ethereum-specific `EIP_DRAFT.md` is dedicated under CC0 1.0 for upstream EIP compatibility. Carrying that file into ethereum/EIPs does not relicense the standalone Resolution specification or conformance corpus.
