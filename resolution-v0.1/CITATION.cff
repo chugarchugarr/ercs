@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: "Resolution: Non-Self-Authorizing State Transitions"
-message: "If you use this specification or conformance corpus, please cite it."
+message: "If you use this specification or conformance corpus, please cite Joseph Angel Lerma."
 type: software
 authors:
   - family-names: Lerma
@@ -8,5 +8,5 @@ authors:
     alias: chugarchugarr
 version: 0.1.0
 date-released: 2026-10-04
-license: CC0-1.0
+license: CC-BY-4.0
 repository-code: "https://github.com/chugarchugarr/ercs"
