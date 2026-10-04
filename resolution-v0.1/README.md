@@ -30,7 +30,12 @@ A Resolution verdict is evidence that a transition was authorized under a partic
 - `SPEC.md` — standalone Resolution v0.1 specification.
 - `EIP_DRAFT.md` — Informational EIP-shaped draft.
 - `RELATED_WORK.md` — adjacent work and evidence map.
-- `conformance/runner.py` + `conformance/fixtures.json` — executable adversarial corpus.
+- `conformance/runner.py` + `conformance/fixtures.json` — executable adversarial corpus (13 fixtures).
+- `conformance/pr_gate.py` — self-applying Resolution gate for the carrying PR.
+- `FALSIFICATION_REVIEW.md` — machine-readable independent falsification protocol.
+- `MERGE_POLICY.md` — exact basis and result rules for the carrying PR.
+- `DEVSECOPS_PROFILE.md` — first non-Ethereum profile, aligned to NIST's 2026 DevSecOps agent-authorization use case.
+- `RELEASE_NOTES.md` — release/archival boundary.
 - `CITATION.cff` — citation metadata.
 
 ## Run
@@ -57,3 +62,12 @@ Copyright © 2026 Joseph Angel Lerma.
 The standalone specification and documentation are licensed under **CC BY 4.0**. The executable conformance code and fixtures are licensed under **MIT**. The Ethereum-specific `EIP_DRAFT.md` is separately dedicated under **CC0 1.0** for EIP-process compatibility.
 
 See `LICENSE.md` for the exact file-level split.
+
+
+## Self-application
+
+The pull request carrying v0.1 is itself treated as a consequential transition.
+
+A GitHub Action reconstructs the exact base/head basis, executes the conformance corpus, checks for an external falsification review anchored to the current head, and emits a non-bearer \`resolution-receipt.json\`.
+
+The receipt becomes stale if a load-bearing basis component changes. This is an implementation of \`AUTHORIZED != CANON\`, not a claim that the receipt itself carries merge authority.
