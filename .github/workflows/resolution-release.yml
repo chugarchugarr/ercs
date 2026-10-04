@@ -1,0 +1,83 @@
+name: Resolution v0.1 Release
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "resolution-v0.1/**"
+      - ".github/workflows/resolution-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+  actions: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out canonical branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run conformance corpus
+        run: python resolution-v0.1/conformance/runner.py resolution-v0.1/conformance/fixtures.json
+
+      - name: Require an authorized carrying PR when associated
+        env:
+          GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ "\${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual release path: repository owner is explicitly effecting the release."
+            exit 0
+          fi
+
+          prs="$(gh api -H 'Accept: application/vnd.github+json' \
+            "repos/\${GITHUB_REPOSITORY}/commits/\${GITHUB_SHA}/pulls")"
+          pr_number="$(printf '%s' "$prs" | jq -r '.[0].number // empty')"
+          head_sha="$(printf '%s' "$prs" | jq -r '.[0].head.sha // empty')"
+
+          if [ -z "$pr_number" ] || [ -z "$head_sha" ]; then
+            echo "No associated PR basis found; refusing automatic release."
+            exit 1
+          fi
+
+          runs="$(gh api "repos/\${GITHUB_REPOSITORY}/actions/runs?head_sha=\${head_sha}&per_page=100")"
+          authorized="$(printf '%s' "$runs" | jq '[.workflow_runs[] | select(.name == "Resolution Gate" and .conclusion == "success")] | length')"
+
+          if [ "$authorized" -lt 1 ]; then
+            echo "No successful Resolution Gate exists for the merged head \${head_sha}."
+            exit 1
+          fi
+
+          echo "Authorized carrying PR #\${pr_number}, head \${head_sha}."
+
+      - name: Package v0.1.0
+        run: |
+          tar -czf resolution-v0.1.0.tar.gz resolution-v0.1
+          zip -qr resolution-v0.1.0.zip resolution-v0.1
+
+      - name: Create immutable GitHub release
+        env:
+          GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="resolution-v0.1.0"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists; preserving existing Canon."
+            exit 0
+          fi
+
+          git tag -a "$tag" -m "Resolution v0.1.0"
+          git push origin "$tag"
+
+          gh release create "$tag" \
+            resolution-v0.1.0.tar.gz \
+            resolution-v0.1.0.zip \
+            --title "Resolution v0.1.0 — Non-Self-Authorizing State Transitions" \
+            --notes-file resolution-v0.1/RELEASE_NOTES.md
