@@ -161,6 +161,47 @@
         "authority_edge": false,
         "claimed_result": "AUTHORIZED"
       }
+    },
+    {
+      "id": "devsecops-plan-time-authorization-stale",
+      "rule": "effectuation_closure",
+      "expect": "RE_RESOLVE",
+      "case": {
+        "resolved_basis": {
+          "state_root": "branch:B1",
+          "authority_epoch": 12,
+          "policy_version": "repo-policy-v4",
+          "transition": "merge:D"
+        },
+        "effectuation_basis": {
+          "state_root": "branch:B2",
+          "authority_epoch": 12,
+          "policy_version": "repo-policy-v4",
+          "transition": "merge:D"
+        },
+        "atomic": false,
+        "re_resolved": false
+      }
+    },
+    {
+      "id": "devsecops-exact-diff-substitution",
+      "rule": "exact_transition_binding",
+      "expect": "UNAUTHORIZED",
+      "case": {
+        "authorized_transition": "merge:diff-D",
+        "attempted_transition": "merge:diff-D-prime",
+        "substitution_authorized": false
+      }
+    },
+    {
+      "id": "devsecops-identity-without-deploy-authority",
+      "rule": "evidence_non_authority",
+      "expect": "UNRESOLVED",
+      "case": {
+        "evidence_valid": true,
+        "authority_edge": false,
+        "claimed_result": "AUTHORIZED"
+      }
     }
   ]
 }
