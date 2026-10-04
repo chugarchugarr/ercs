@@ -46,3 +46,14 @@ Possibility may expand.
 Authority does not expand merely because possibility, evidence, or representation expanded.
 Only a resolved transition may become Canon.
 ```
+
+
+## Authorship and license
+
+Resolution v0.1 is authored by **Joseph Angel Lerma (@chugarchugarr)**.
+
+Copyright © 2026 Joseph Angel Lerma.
+
+The standalone specification and documentation are licensed under **CC BY 4.0**. The executable conformance code and fixtures are licensed under **MIT**. The Ethereum-specific `EIP_DRAFT.md` is separately dedicated under **CC0 1.0** for EIP-process compatibility.
+
+See `LICENSE.md` for the exact file-level split.
