@@ -109,3 +109,43 @@ These fields independently expose the same structural problem: historical approv
 https://cockrell.utexas.edu/news/rethinking-safety-certification-for-autonomous-systems/
 https://www.fda.gov/medical-devices/software-medical-device-samd/predetermined-change-control-plans-machine-learning-enabled-medical-devices-guiding-principles
 https://www.nature.com/articles/s41570-026-00847-2
+
+## Execution-finality and stale-authorization Internet-Drafts
+
+Several September 2026 Internet-Drafts independently formalize important subproblems that overlap Resolution's effectuation boundary.
+
+**Finality-Bound Revocation** observes that an authorization can be legitimate when issued but become unsafe before the protected consequence becomes effective; the relevant question is whether a revocation that becomes authoritative before commit controls that commit.
+
+https://datatracker.ietf.org/doc/html/draft-das-finality-bound-revocation-00
+
+**Execution-Finality Architecture for AI and Autonomous Critical Systems** requires the last preventable enforcement boundary to reconstruct the actual operation, verify exact-act binding and current protected state, prevent replay/stale authority, and couple authorization to effectuation through an atomic or equivalently crash-consistent transition.
+
+https://datatracker.ietf.org/doc/html/draft-das-execution-finality-deployment-01
+
+**State and Policy Continuity at the Execution-Finality Boundary** treats valid authorization becoming stale under changed state or policy as a distinct problem.
+
+https://datatracker.ietf.org/doc/html/draft-das-state-policy-continuity-finality-00
+
+**Agent Authority Transition Receipts** defines signed non-bearer receipts binding an agent operation to principal, policy, evidence, decision, audience, validity interval, and predecessor authority state.
+
+https://datatracker.ietf.org/doc/html/draft-watts-agent-authority-transition-receipts-00
+
+Relation: these drafts independently establish that stale authorization, exact-act effectuation, and non-bearer authority-transition receipts are active research areas. Resolution v0.1 therefore does **not** claim invention of stale-authorization detection, execution-finality enforcement, authorization receipts, capability enforcement, or current-state revalidation as isolated ideas.
+
+## Resolution v0.1 contribution boundary
+
+The claim made here is narrower and compositional:
+
+- one mechanism-neutral primitive, \`Resolve(C,E,P,A,T)\`;
+- evidence/authority non-inheritance;
+- first-class \`UNRESOLVED\`;
+- the uncommitted outcome-relevant-input falsifier;
+- exact-transition binding;
+- authority-non-expansive composition;
+- effectuation closure (\`AUTHORIZED != CANON\`);
+- Canon future-sufficiency / residual authority;
+- translation authority preservation across representation layers; and
+- an executable adversarial corpus that applies the same invariant across otherwise separate domains.
+
+Any future prior art that anticipates one of these components should narrow the contribution boundary rather than be omitted.
+
