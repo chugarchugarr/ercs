@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 Joseph Angel Lerma
+# SPDX-License-Identifier: MIT
 import json, sys
 from pathlib import Path
 
