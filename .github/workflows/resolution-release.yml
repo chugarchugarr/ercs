@@ -6,8 +6,6 @@ on:
     paths:
       - "resolution-v0.1/**"
       - ".github/workflows/resolution-release.yml"
-  workflow_dispatch:
-
 permissions:
   contents: write
   pull-requests: read
@@ -30,11 +28,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Manual release path: repository owner is explicitly effecting the release."
-            exit 0
-          fi
 
           prs="$(gh api -H 'Accept: application/vnd.github+json' \
             "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls")"
