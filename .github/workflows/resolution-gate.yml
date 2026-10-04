@@ -1,0 +1,50 @@
+name: Resolution Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, review_requested, edited]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  resolve:
+    name: Resolve exact merge candidate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact candidate head
+        uses: actions/checkout@v4
+        with:
+          ref: \${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve merge candidate
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        run: python resolution-v0.1/conformance/pr_gate.py
+
+      - name: Publish non-bearer Resolution receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: resolution-receipt-\${{ github.event.pull_request.number }}-\${{ github.event.pull_request.head.sha }}
+          path: resolution-v0.1/resolution-receipt.json
+          if-no-files-found: error
+
+      - name: Enforce current Resolution result
+        run: |
+          python - <<'PY'
+          import json
+          r = json.load(open("resolution-v0.1/resolution-receipt.json"))
+          print("Resolution result:", r["result"])
+          if r["result"] != "AUTHORIZED":
+              raise SystemExit(
+                  "Exact merge candidate is not AUTHORIZED under resolution-v0.1/MERGE_POLICY.md"
+              )
+          PY
