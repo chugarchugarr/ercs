@@ -1,3 +1,8 @@
+<!--
+Copyright © 2026 Joseph Angel Lerma.
+Licensed under CC BY 4.0. See LICENSE.md.
+-->
+
 # Resolution v0.1 — Non-Self-Authorizing State Transitions
 
 Status: Experimental Research Specification  
