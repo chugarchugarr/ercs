@@ -18,6 +18,10 @@ def evaluate(f):
     if rule == "scope_binding":
         return "UNAUTHORIZED" if c["proof_valid"] and set(c["proof_scope"]) != set(c["target_scope"]) else "CLOSED"
 
+    if rule == "exact_transition_binding":
+        changed = c["authorized_transition"] != c["attempted_transition"]
+        return "UNAUTHORIZED" if changed and not c.get("substitution_authorized", False) else "CLOSED"
+
     if rule == "composition_non_expansion":
         allowed = set(c["input_authority"]) | set(c.get("policy_grants", []))
         return "VIOLATION" if not set(c["output_authority"]).issubset(allowed) else "CLOSED"
