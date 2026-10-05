@@ -1,0 +1,84 @@
+name: Resolution v0.1 Release
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "resolution-v0.1/**"
+      - ".github/workflows/resolution-release.yml"
+permissions:
+  contents: write
+  pull-requests: read
+  actions: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out canonical branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run conformance corpus
+        run: python resolution-v0.1/conformance/runner.py resolution-v0.1/conformance/fixtures.json
+
+      - name: Require an authorized carrying PR when associated
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          prs="$(gh api -H 'Accept: application/vnd.github+json' \
+            "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls")"
+          pr_number="$(printf '%s' "$prs" | jq -r '.[0].number // empty')"
+          head_sha="$(printf '%s' "$prs" | jq -r '.[0].head.sha // empty')"
+
+          if [ -z "$pr_number" ] || [ -z "$head_sha" ]; then
+            echo "No associated PR basis found; refusing automatic release."
+            exit 1
+          fi
+
+          runs="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${head_sha}&per_page=100")"
+          latest_gate="$(printf '%s' "$runs" | jq -c '[.workflow_runs[] | select(.name == "Resolution Gate")] | sort_by(.created_at) | last // empty')"
+
+          if [ -z "$latest_gate" ]; then
+            echo "No Resolution Gate exists for the merged head ${head_sha}."
+            exit 1
+          fi
+
+          latest_conclusion="$(printf '%s' "$latest_gate" | jq -r '.conclusion // empty')"
+          latest_run_id="$(printf '%s' "$latest_gate" | jq -r '.id // empty')"
+
+          if [ "$latest_conclusion" != "success" ]; then
+            echo "Latest Resolution Gate for ${head_sha} is not authorized (run ${latest_run_id}, conclusion=${latest_conclusion:-none})."
+            exit 1
+          fi
+
+          echo "Latest Resolution Gate authorizes carrying PR #${pr_number}, head ${head_sha} (run ${latest_run_id})."
+
+      - name: Package v0.1.0
+        run: |
+          tar -czf resolution-v0.1.0.tar.gz resolution-v0.1
+          zip -qr resolution-v0.1.0.zip resolution-v0.1
+
+      - name: Create immutable GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="resolution-v0.1.0"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists; preserving existing Canon."
+            exit 0
+          fi
+
+          git tag -a "$tag" -m "Resolution v0.1.0"
+          git push origin "$tag"
+
+          gh release create "$tag" \
+            resolution-v0.1.0.tar.gz \
+            resolution-v0.1.0.zip \
+            --title "Resolution v0.1.0 — Non-Self-Authorizing State Transitions" \
+            --notes-file resolution-v0.1/RELEASE_NOTES.md
