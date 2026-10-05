@@ -14,8 +14,14 @@ Resolve(C, E, P, A, T)
 The foundational law is:
 
 ```text
-E_n ⊆ E_(n+1)  does not imply  A_n ⊆ A_(n+1)
+Authority is a scoped relation at an effective time,
+evaluated from a knowledge state.
+
+A_tau(S, action, scope, t) -> TRUE | FALSE | UNRESOLVED
 ```
+
+Evidence may accumulate across knowledge time. Authority does not propagate
+across effective time merely because history was preserved.
 
 The closure law is:
 
@@ -30,7 +36,7 @@ A Resolution verdict is evidence that a transition was authorized under a partic
 - `SPEC.md` — standalone Resolution v0.1 specification.
 - `EIP_DRAFT.md` — Informational EIP-shaped draft.
 - `RELATED_WORK.md` — adjacent work and evidence map.
-- `conformance/runner.py` + `conformance/fixtures.json` — executable adversarial corpus (13 fixtures).
+- `conformance/runner.py` + `conformance/fixtures.json` — executable adversarial corpus (14 fixtures).
 - `conformance/pr_gate.py` — self-applying Resolution gate for the carrying PR.
 - `FALSIFICATION_REVIEW.md` — machine-readable independent falsification protocol.
 - `MERGE_POLICY.md` — exact basis and result rules for the carrying PR.

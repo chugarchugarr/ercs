@@ -202,6 +202,29 @@
         "authority_edge": false,
         "claimed_result": "AUTHORIZED"
       }
+    },
+    {
+      "id": "evidence-changes-between-resolution-and-effectuation",
+      "rule": "effectuation_closure",
+      "expect": "RE_RESOLVE",
+      "case": {
+        "resolved_basis": {
+          "state_root": "S1",
+          "authority_epoch": 7,
+          "policy_version": 3,
+          "transition": "T",
+          "evidence_root": "E1"
+        },
+        "effectuation_basis": {
+          "state_root": "S1",
+          "authority_epoch": 7,
+          "policy_version": 3,
+          "transition": "T",
+          "evidence_root": "E2"
+        },
+        "atomic": false,
+        "re_resolved": false
+      }
     }
   ]
 }

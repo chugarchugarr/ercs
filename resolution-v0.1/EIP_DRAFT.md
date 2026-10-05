@@ -29,21 +29,32 @@ Resolve(currentState, evidence, procedure, authority, proposedTransition)
      | UNRESOLVED
 ```
 
+Authority is temporally scoped. For state/entity `S`, action `alpha`, scope
+`sigma`, effective time `t`, and evidence/knowledge state `tau`:
+
+```text
+A_tau(S, alpha, sigma, t)
+    -> TRUE
+     | FALSE
+     | UNRESOLVED
+```
+
+`t` identifies when the authority relation applies; `tau` identifies the
+admitted evidentiary state from which it is evaluated. Only `TRUE` for the
+exact action, scope, and effective time authorizes the protected transition.
+
 `UNRESOLVED` MUST NOT be collapsed into an authoritative answer merely because an implementation requires a binary result. An explicit default-deny rule MAY convert the operational consequence to rejection if that rule is part of the committed procedure.
 
 ### Evidence and authority
 
-```text
-E_n ⊆ E_(n+1)
-```
+Evidence may accumulate across knowledge time, but authority does not propagate
+across effective time merely because evidence or history was preserved. The
+commonly observed non-monotonicity of authority is a consequence of this
+temporal scoping, not the primitive rule.
 
-does not imply:
-
-```text
-A_n ⊆ A_(n+1)
-```
-
-A valid object `X` MUST NOT be treated as authoritative for consequence `Y` unless the current procedure establishes the authority edge from `X` to `Y`.
+A valid object `X` MUST NOT be treated as authoritative for consequence `Y`
+unless presently admitted evidence and the current procedure establish that
+authority for the exact action, scope, and effective time.
 
 ### Exact transition binding
 
@@ -59,13 +70,18 @@ Composition MUST be authority-non-expansive.
 
 ### Temporal authority
 
-A historically valid signature, credential, delegation, owner relation, recovery commitment, approval, or Resolution result MUST NOT be treated as current authority solely because its authenticity remains verifiable.
+Historical authority is evidence about historical authority, not present
+authority. A historically valid signature, credential, delegation, owner
+relation, recovery commitment, approval, or Resolution result MUST NOT be
+treated as current authority solely because its authenticity remains
+verifiable. Invalidating a successor MUST NOT silently reactivate a predecessor;
+present authority must be established for the present transition.
 
 ### Effectuation closure
 
 `AUTHORIZED` is not equivalent to an effective canonical successor.
 
-If a load-bearing part of the Resolution basis changes between authorization and effectuation, the protected transition MUST either be re-resolved against the current basis or rejected, unless Resolution and effectuation were atomic with respect to that basis.
+If a load-bearing part of the Resolution basis changes between authorization and effectuation, the protected transition MUST either be re-resolved against the current basis or rejected, unless Resolution and effectuation were atomic with respect to that basis. The effectuation check MUST bind the complete load-bearing basis (or a commitment to it); a change in admitted evidence alone is sufficient when that evidence can affect authority.
 
 An authorization receipt is evidence of the earlier decision and MUST NOT be treated as self-renewing authority.
 
@@ -96,6 +112,7 @@ This EIP changes no Ethereum protocol rules by itself.
 | Valid proof whose committed scope differs from the target package | Reject |
 | Authorization for `T`, execution attempts `T'` | Reject |
 | Two valid components compose into authority supplied by neither component nor policy | Reject |
+| `AUTHORIZED` under evidence root `E1`, effectuation under `E2` with all other basis fields unchanged | Re-resolve or reject |
 | `AUTHORIZED` at authority epoch `n`, execution after authority epoch changes | Re-resolve or reject |
 | Two histories canonicalize identically but the same future revocation requires different answers | Canon insufficient |
 | Lower-level implementation can produce a protected effect absent from source authority | Translation boundary open |

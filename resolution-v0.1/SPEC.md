@@ -29,7 +29,7 @@ Resolve(C, E, P, A, T)
 - `C`: canonical predecessor state.
 - `E`: admitted evidence.
 - `P`: committed procedure or policy.
-- `A`: current authority, including residual authority state required to distinguish future outcomes.
+- `A`: the authority relation applicable to the proposed action and scope at its effective time, evaluated from the current evidence/knowledge state; it includes residual authority state required to distinguish future outcomes.
 - `T`: exact proposed consequential transition.
 
 `AUTHORIZED` establishes authority for exactly `T` under the current basis.  
@@ -44,15 +44,49 @@ The Resolution basis is:
 B = (C, E, P, A, T)
 ```
 
-## 3. Invariants
-
-### R1 — Evidence non-inheritance
+Authority is not a timeless property of an object. Its complete form is a
+scoped relation evaluated from a knowledge state:
 
 ```text
-E_n ⊆ E_(n+1)  does not imply  A_n ⊆ A_(n+1)
+A_tau(S, action, scope, t)
+  -> TRUE
+   | FALSE
+   | UNRESOLVED
 ```
 
-Preserving evidence MUST NOT by itself preserve, restore, or expand its former authority.
+- `t` is effective/valid time: when the authority relation is claimed to apply.
+- `tau` is evidence/knowledge time: the admitted evidentiary state from which
+  that historical or present authority claim is evaluated.
+
+A transition is permitted only when presently admitted evidence establishes
+`TRUE` for the exact action, scope, and effective time. A fact learned now
+about authority at an earlier effective time does not by itself authorize an
+action now.
+
+## 3. Invariants
+
+### R1 — Evidence accumulation does not propagate authority
+
+Evidence may accumulate across knowledge time:
+
+```text
+E_tau1 ⊆ E_tau2
+```
+
+That does not make authority an accumulating property. Authority must be
+established for its particular action, scope, and effective time under the
+current knowledge state.
+
+```text
+A_tau1(S, action, scope, t) = TRUE
+does not imply
+A_tau2(S, action, scope, t_now) = TRUE
+```
+
+The earlier "evidence monotonic, authority non-monotonic" observation is
+therefore derived from temporal scoping; it is not the primitive law.
+Preserving evidence MUST NOT by itself preserve, restore, or expand its former
+authority.
 
 ### R2 — Validity is not authority
 
@@ -89,7 +123,20 @@ A_out ⊆ A_inputs ∪ A_explicitly_granted_by_P
 
 ### R6 — Temporal authority
 
-A previously valid or authorized object MUST NOT be treated as current authority merely because it remains authentic or historically valid.
+Authority is a scoped relation at an effective time, not a property inherited
+through history.
+
+```text
+A_tau2(S, action, scope, t0) = TRUE
+does not imply
+A_tau2(S, action, scope, t2) = TRUE
+```
+
+Likewise, learning that a successor lacked authority at an earlier time does
+not reactivate its predecessor now. Historical authority is evidence about
+historical authority. A previously valid or authorized object MUST NOT be
+treated as current authority merely because it remains authentic or
+historically valid.
 
 ### R7 — Effectuation closure
 
@@ -100,6 +147,11 @@ AUTHORIZED(B_n, T) does not imply AUTHORIZED(B_m, T)
 when a load-bearing part of the basis changed between Resolution and effectuation.
 
 A protected transition may become effective only when Resolution and commit are atomic with respect to the load-bearing basis, the implementation verifies that the basis remains applicable at effectuation, or the transition is re-resolved against the current basis.
+
+For a non-atomic transition, the effectuation check MUST bind the complete
+load-bearing Resolution basis (or a commitment to it), not a selected
+projection. Because `E` is part of `B`, a change in admitted evidence alone
+requires re-resolution whenever that evidence can affect authority.
 
 An authorization receipt is evidence of the earlier decision. It is not self-renewing authority.
 

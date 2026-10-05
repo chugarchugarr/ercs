@@ -66,10 +66,22 @@ def parse_review(review, author, head_sha):
         return None
     if not MARKER.search(body):
         return None
-    boundary = BOUNDARY.search(body)
-    result = RESULT.search(body)
-    if not boundary or not result:
+    boundaries = [x.upper() for x in BOUNDARY.findall(body)]
+    results = [x.upper() for x in RESULT.findall(body)]
+    if not boundaries or not results:
         return None
+
+    # Fail closed on presentation ambiguity. Any explicit counterexample
+    # dominates a clean claim. Multiple clean claims are non-qualifying.
+    if "COUNTEREXAMPLE" in results:
+        result = "COUNTEREXAMPLE"
+        boundary = boundaries[0] if len(set(boundaries)) == 1 else "AMBIGUOUS"
+    elif len(results) == 1 and results[0] == "NO_COUNTEREXAMPLE" and len(boundaries) == 1:
+        result = "NO_COUNTEREXAMPLE"
+        boundary = boundaries[0]
+    else:
+        return None
+
     fixture = FIXTURE.search(body)
     return {
         "review_id": review.get("id"),
@@ -77,8 +89,8 @@ def parse_review(review, author, head_sha):
         "state": review.get("state"),
         "commit_id": review.get("commit_id"),
         "submitted_at": review.get("submitted_at"),
-        "boundary": boundary.group(1).upper(),
-        "result": result.group(1).upper(),
+        "boundary": boundary,
+        "result": result,
         "fixture": fixture.group(1).strip() if fixture else "NONE",
     }
 

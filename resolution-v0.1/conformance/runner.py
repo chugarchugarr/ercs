@@ -28,8 +28,9 @@ def evaluate(f):
 
     if rule == "effectuation_closure":
         rb, eb = c["resolved_basis"], c["effectuation_basis"]
-        keys = ("state_root", "authority_epoch", "policy_version", "transition")
-        changed = any(rb.get(k) != eb.get(k) for k in keys)
+        # The fixture declares the load-bearing basis. Compare it as a whole so
+        # newly added basis components cannot silently fall outside effectuation.
+        changed = rb != eb
         return "RE_RESOLVE" if changed and not c.get("atomic", False) and not c.get("re_resolved", False) else "CLOSED"
 
     if rule == "canon_future_sufficiency":

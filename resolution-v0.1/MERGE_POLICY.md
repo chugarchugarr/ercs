@@ -38,7 +38,7 @@ The policy does not expand GitHub authority. It only states when this research a
 
 An \`AUTHORIZED\` receipt is not bearer authority.
 
-If the head SHA, base SHA, merge policy, falsification protocol, or conformance corpus changes before merge, the earlier receipt remains evidence but the transition MUST be re-resolved.
+If the head SHA, base SHA, merge policy, falsification protocol, conformance corpus, or qualifying current-head falsification-review set changes before merge, the earlier receipt remains evidence but the transition MUST be re-resolved.
 
 \`\`\`text
 AUTHORIZED(B_n,T) != AUTHORIZED(B_m,T)

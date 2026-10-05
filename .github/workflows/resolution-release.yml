@@ -40,14 +40,22 @@ jobs:
           fi
 
           runs="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${head_sha}&per_page=100")"
-          authorized="$(printf '%s' "$runs" | jq '[.workflow_runs[] | select(.name == "Resolution Gate" and .conclusion == "success")] | length')"
+          latest_gate="$(printf '%s' "$runs" | jq -c '[.workflow_runs[] | select(.name == "Resolution Gate")] | sort_by(.created_at) | last // empty')"
 
-          if [ "$authorized" -lt 1 ]; then
-            echo "No successful Resolution Gate exists for the merged head ${head_sha}."
+          if [ -z "$latest_gate" ]; then
+            echo "No Resolution Gate exists for the merged head ${head_sha}."
             exit 1
           fi
 
-          echo "Authorized carrying PR #${pr_number}, head ${head_sha}."
+          latest_conclusion="$(printf '%s' "$latest_gate" | jq -r '.conclusion // empty')"
+          latest_run_id="$(printf '%s' "$latest_gate" | jq -r '.id // empty')"
+
+          if [ "$latest_conclusion" != "success" ]; then
+            echo "Latest Resolution Gate for ${head_sha} is not authorized (run ${latest_run_id}, conclusion=${latest_conclusion:-none})."
+            exit 1
+          fi
+
+          echo "Latest Resolution Gate authorizes carrying PR #${pr_number}, head ${head_sha} (run ${latest_run_id})."
 
       - name: Package v0.1.0
         run: |
